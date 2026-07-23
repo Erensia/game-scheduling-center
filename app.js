@@ -1,7 +1,7 @@
 (function(){
 
   var STORAGE_KEY = 'farming-control-state-v1';
-  var state = { games: [], selectedGameId: null, tab: 'chars' };
+  var state = { games: [], selectedGameId: null, tab: 'chars', view: 'home' };
   var root = document.getElementById('root');
   var WEEKDAYS = ['일','월','화','수','목','금','토'];
   var saveStatusTimer = null;
@@ -114,16 +114,15 @@
 
   // ---------- render ----------
   function render(){
-    var game = getGame();
+    var game = (state.view === 'game') ? getGame() : null;
     root.className = '';
     root.innerHTML =
       renderDataBar() +
       '<div class="app">' +
         renderSidebar() +
         '<div class="main">' +
-          renderSummary(game) +
-          renderTabs(game) +
-          '<div class="content">' + renderContent(game) + '</div>' +
+          (state.view === 'game' ? renderSummary(game) + renderTabs(game) : '') +
+          '<div class="content">' + (state.view === 'home' ? renderHome() : renderContent(game)) + '</div>' +
         '</div>' +
       '</div>';
     bindEvents();
@@ -144,7 +143,7 @@
 
   function renderSidebar(){
     var items = state.games.map(function(g){
-      var active = g.id === state.selectedGameId;
+      var active = state.view === 'game' && g.id === state.selectedGameId;
       return (
         '<div class="game-item' + (active?' active':'') + '">' +
           '<button class="game-name-btn" data-select-game="' + g.id + '">' +
@@ -157,6 +156,7 @@
     return (
       '<div class="sidebar">' +
         '<div class="brand"><span class="dot"></span>파밍 관제소</div>' +
+        '<button class="home-nav-btn' + (state.view==='home'?' active':'') + '" id="btn-go-home">🏠 오늘 할 일</button>' +
         '<div class="game-list">' + items + '</div>' +
         '<button class="add-game" id="btn-add-game">+ 게임 추가</button>' +
       '</div>'
@@ -204,6 +204,90 @@
     if(state.tab === 'weekly') return renderWeeklyTab(game);
     if(state.tab === 'party') return renderPartyTab(game);
     return '';
+  }
+
+  function renderHome(){
+    if(state.games.length === 0){
+      return (
+        '<div class="empty">' +
+          '<h3>아직 등록된 게임이 없어요</h3>' +
+          '<p>게임을 추가하면 모든 게임의 할 일을 이 화면 하나에 모아볼 수 있어요.</p>' +
+          '<button class="btn primary" id="btn-add-game-home">게임 추가하기</button>' +
+        '</div>'
+      );
+    }
+
+    var totalPendingChars = 0;
+    var totalWeeklyLeft = 0;
+    state.games.forEach(function(g){
+      totalPendingChars += g.characters.filter(function(c){ return !c.completed; }).length;
+      var wk = weekKeyFor(g.resetDay);
+      totalWeeklyLeft += g.weekly.filter(function(w){ return w.doneWeekKey !== wk; }).length;
+    });
+
+    var stats =
+      '<div class="home-stats">' +
+        '<div class="home-stat-card"><div class="home-stat-num mono">' + state.games.length + '</div><div class="home-stat-label">등록된 게임</div></div>' +
+        '<div class="home-stat-card pending"><div class="home-stat-num mono">' + totalPendingChars + '</div><div class="home-stat-label">육성 필요 캐릭터</div></div>' +
+        '<div class="home-stat-card pending"><div class="home-stat-num mono">' + totalWeeklyLeft + '</div><div class="home-stat-label">이번 주 남은 컨텐츠</div></div>' +
+      '</div>';
+
+    var weeklyGroups = state.games.map(function(g){
+      var wk = weekKeyFor(g.resetDay);
+      var pending = g.weekly.filter(function(w){ return w.doneWeekKey !== wk; });
+      if(pending.length === 0) return '';
+      var rows = pending.map(function(w){
+        return (
+          '<div class="weekly-row">' +
+            '<input type="checkbox" data-home-weekly="' + g.id + '|' + w.id + '">' +
+            '<div class="w-name">' + esc(w.name) + '</div>' +
+            '<span class="w-tag pending">미완료</span>' +
+          '</div>'
+        );
+      }).join('');
+      return (
+        '<div class="home-group">' +
+          '<div class="home-group-head">' +
+            '<span class="home-group-title">' + esc(g.name) + '</span>' +
+            '<button class="home-jump" data-home-jump="' + g.id + '|weekly">게임으로 이동 →</button>' +
+          '</div>' +
+          '<div class="weekly-list">' + rows + '</div>' +
+        '</div>'
+      );
+    }).join('');
+
+    var charGroups = state.games.map(function(g){
+      var pending = g.characters.filter(function(c){ return !c.completed; });
+      if(pending.length === 0) return '';
+      var rows = pending.map(function(c){
+        var openItems = c.items.filter(function(it){ return !it.done; }).length;
+        var metaText = c.items.length ? (openItems + '/' + c.items.length + ' 항목 남음') : '체크리스트 없음';
+        return (
+          '<div class="home-char-row">' +
+            '<div class="home-char-name">' + esc(c.name) + '</div>' +
+            '<div class="home-char-meta mono">' + metaText + '</div>' +
+            '<button class="toggle-done" data-home-toggle-char="' + g.id + '|' + c.id + '">완료로 표시</button>' +
+          '</div>'
+        );
+      }).join('');
+      return (
+        '<div class="home-group">' +
+          '<div class="home-group-head">' +
+            '<span class="home-group-title">' + esc(g.name) + '</span>' +
+            '<button class="home-jump" data-home-jump="' + g.id + '|chars">게임으로 이동 →</button>' +
+          '</div>' +
+          '<div class="home-char-list">' + rows + '</div>' +
+        '</div>'
+      );
+    }).join('');
+
+    return (
+      stats +
+      '<h3 class="home-section-title">이번 주 남은 컨텐츠</h3>' +
+      (weeklyGroups || '<div class="empty small"><p>모든 게임의 주간 컨텐츠를 완료했어요 🎉</p></div>') +
+      '<h3 class="home-section-title">육성이 필요한 캐릭터</h3>' +
+      (charGroups || '<div class="empty small"><p>모든 캐릭터의 육성이 끝났어요 🎉</p></div>')
+    );
   }
 
   function renderCharsTab(game){
@@ -364,13 +448,20 @@
     var resetAllBtn = document.getElementById('btn-reset-all');
     if(resetAllBtn) resetAllBtn.addEventListener('click', resetAll);
 
-    root.querySelectorAll('#btn-add-game, #btn-add-game-empty').forEach(function(el){
+    root.querySelectorAll('#btn-add-game, #btn-add-game-empty, #btn-add-game-home').forEach(function(el){
       el.addEventListener('click', addGame);
+    });
+
+    var goHomeBtn = document.getElementById('btn-go-home');
+    if(goHomeBtn) goHomeBtn.addEventListener('click', function(){
+      state.view = 'home';
+      render();
     });
 
     root.querySelectorAll('[data-select-game]').forEach(function(el){
       el.addEventListener('click', function(){
         state.selectedGameId = el.getAttribute('data-select-game');
+        state.view = 'game';
         state.tab = 'chars';
         render();
       });
@@ -384,6 +475,7 @@
         state.games = state.games.filter(function(x){ return x.id !== id; });
         if(state.selectedGameId === id){
           state.selectedGameId = state.games[0] ? state.games[0].id : null;
+          if(!state.selectedGameId) state.view = 'home';
         }
         saveData(); render();
       });
@@ -396,7 +488,37 @@
       });
     });
 
-    var game = getGame();
+    root.querySelectorAll('[data-home-weekly]').forEach(function(el){
+      el.addEventListener('change', function(){
+        var parts = el.getAttribute('data-home-weekly').split('|');
+        var g = state.games.find(function(x){return x.id===parts[0];});
+        if(!g) return;
+        var w = g.weekly.find(function(x){return x.id===parts[1];});
+        if(!w) return;
+        w.doneWeekKey = el.checked ? weekKeyFor(g.resetDay) : null;
+        saveData(); render();
+      });
+    });
+    root.querySelectorAll('[data-home-toggle-char]').forEach(function(el){
+      el.addEventListener('click', function(){
+        var parts = el.getAttribute('data-home-toggle-char').split('|');
+        var g = state.games.find(function(x){return x.id===parts[0];});
+        if(!g) return;
+        var c = g.characters.find(function(x){return x.id===parts[1];});
+        if(c){ c.completed = true; saveData(); render(); }
+      });
+    });
+    root.querySelectorAll('[data-home-jump]').forEach(function(el){
+      el.addEventListener('click', function(){
+        var parts = el.getAttribute('data-home-jump').split('|');
+        state.selectedGameId = parts[0];
+        state.view = 'game';
+        state.tab = parts[1];
+        render();
+      });
+    });
+
+    var game = (state.view === 'game') ? getGame() : null;
     if(!game) return;
 
     // characters tab
@@ -513,6 +635,7 @@
     var g = { id: uid(), name: name.trim(), resetDay: 1, characters: [], weekly: [], parties: [], charFilter: 'all' };
     state.games.push(g);
     state.selectedGameId = g.id;
+    state.view = 'game';
     state.tab = 'chars';
     saveData(); render();
   }
