@@ -30,6 +30,7 @@
       if(raw){
         var parsed = JSON.parse(raw);
         state.games = parsed.games || [];
+        state.games.forEach(function(g){ if(!g.templates) g.templates = []; });
         state.selectedGameId = parsed.selectedGameId || (state.games[0] ? state.games[0].id : null);
       }
     }catch(e){
@@ -84,6 +85,7 @@
         if(!parsed || !Array.isArray(parsed.games)) throw new Error('형식이 올바르지 않습니다');
         if(!confirm('백업 파일을 불러오면 현재 데이터를 덮어씁니다. 계속할까요?')) return;
         state.games = parsed.games;
+        state.games.forEach(function(g){ if(!g.templates) g.templates = []; });
         state.selectedGameId = parsed.selectedGameId || (state.games[0] ? state.games[0].id : null);
         saveData();
         render();
@@ -292,17 +294,46 @@
 
   function renderCharsTab(game){
     var filter = game.charFilter || 'all';
+    var templates = game.templates || [];
     var list = game.characters.filter(function(c){
       if(filter === 'pending') return !c.completed;
       if(filter === 'done') return c.completed;
       return true;
     });
 
+    var templateSelect = templates.length ?
+      '<select id="new-char-template">' +
+        '<option value="">템플릿 없이 추가</option>' +
+        templates.map(function(t){
+          return '<option value="' + t.id + '">' + esc(t.name) + ' (' + t.items.length + '개 항목)</option>';
+        }).join('') +
+      '</select>' : '';
+
     var addBar =
       '<div class="add-char-bar">' +
         '<input type="text" id="new-char-name" placeholder="캐릭터 이름 입력 후 Enter">' +
+        templateSelect +
         '<button class="btn primary" id="btn-add-char">추가</button>' +
       '</div>';
+
+    var templatePanel = '';
+    if(templates.length){
+      templatePanel =
+        '<div class="template-panel">' +
+          '<div class="template-panel-title">저장된 템플릿</div>' +
+          '<div class="template-list">' +
+            templates.map(function(t){
+              return (
+                '<div class="template-chip">' +
+                  '<span>' + esc(t.name) + '</span>' +
+                  '<span class="mono template-chip-count">' + t.items.length + '</span>' +
+                  '<button class="item-del" data-del-template="' + t.id + '" title="템플릿 삭제">✕</button>' +
+                '</div>'
+              );
+            }).join('') +
+          '</div>' +
+        '</div>';
+    }
 
     var filterRow =
       '<div class="filter-row">' +
@@ -314,11 +345,11 @@
       '</div>';
 
     if(game.characters.length === 0){
-      return addBar + filterRow +
+      return addBar + templatePanel + filterRow +
         '<div class="empty"><h3>캐릭터가 없어요</h3><p>위에서 캐릭터 이름을 입력해 추가해 보세요.</p></div>';
     }
     if(list.length === 0){
-      return addBar + filterRow +
+      return addBar + templatePanel + filterRow +
         '<div class="empty"><h3>해당하는 캐릭터가 없어요</h3><p>다른 필터를 선택해 보세요.</p></div>';
     }
 
@@ -348,6 +379,7 @@
             '<button data-add-item="' + c.id + '">추가</button>' +
           '</div>' +
           '<div class="char-foot">' +
+            (c.items.length ? '<button class="btn ghost small" data-save-template="' + c.id + '">템플릿으로 저장</button>' : '<span></span>') +
             '<button class="toggle-done' + (c.completed?' is-done':'') + '" data-toggle-char="' + c.id + '">' +
               (c.completed ? '✓ 육성 완료' : '더 이상 파밍 안 해도 됨으로 표시') +
             '</button>' +
@@ -356,7 +388,7 @@
       );
     }).join('');
 
-    return addBar + filterRow + '<div class="char-grid">' + cards + '</div>';
+    return addBar + templatePanel + filterRow + '<div class="char-grid">' + cards + '</div>';
   }
 
   function renderWeeklyTab(game){
@@ -542,6 +574,21 @@
         if(c){ c.completed = !c.completed; saveData(); render(); }
       });
     });
+    root.querySelectorAll('[data-save-template]').forEach(function(el){
+      el.addEventListener('click', function(){
+        saveAsTemplate(game, el.getAttribute('data-save-template'));
+      });
+    });
+    root.querySelectorAll('[data-del-template]').forEach(function(el){
+      el.addEventListener('click', function(){
+        var id = el.getAttribute('data-del-template');
+        var t = (game.templates || []).find(function(x){ return x.id === id; });
+        if(t && !confirm('"' + t.name + '" 템플릿을 삭제할까요?')) return;
+        game.templates = (game.templates || []).filter(function(x){ return x.id !== id; });
+        saveData(); render();
+      });
+    });
+
     root.querySelectorAll('[data-del-char]').forEach(function(el){
       el.addEventListener('click', function(){
         game.characters = game.characters.filter(function(x){return x.id!==el.getAttribute('data-del-char');});
@@ -632,7 +679,7 @@
   function addGame(){
     var name = prompt('추가할 게임 이름을 입력하세요 (예: 명조, 젠존제)');
     if(!name || !name.trim()) return;
-    var g = { id: uid(), name: name.trim(), resetDay: 1, characters: [], weekly: [], parties: [], charFilter: 'all' };
+    var g = { id: uid(), name: name.trim(), resetDay: 1, characters: [], weekly: [], parties: [], templates: [], charFilter: 'all' };
     state.games.push(g);
     state.selectedGameId = g.id;
     state.view = 'game';
@@ -644,8 +691,31 @@
     var input = document.getElementById('new-char-name');
     var name = input.value.trim();
     if(!name) return;
-    game.characters.push({ id: uid(), name: name, completed: false, items: [] });
+    var templateSelect = document.getElementById('new-char-template');
+    var templateId = templateSelect ? templateSelect.value : '';
+    var items = [];
+    if(templateId){
+      var tpl = (game.templates || []).find(function(t){ return t.id === templateId; });
+      if(tpl){
+        items = tpl.items.map(function(it){ return { id: uid(), text: it.text, done: false }; });
+      }
+    }
+    game.characters.push({ id: uid(), name: name, completed: false, items: items });
     input.value = '';
+    saveData(); render();
+  }
+
+  function saveAsTemplate(game, charId){
+    var c = game.characters.find(function(x){ return x.id === charId; });
+    if(!c || !c.items.length) return;
+    var name = prompt('템플릿 이름을 입력하세요 (예: 공격딜러 기본 세트)');
+    if(!name || !name.trim()) return;
+    game.templates = game.templates || [];
+    game.templates.push({
+      id: uid(),
+      name: name.trim(),
+      items: c.items.map(function(it){ return { text: it.text }; })
+    });
     saveData(); render();
   }
 

@@ -101,6 +101,23 @@ button{font-family:inherit;cursor:pointer;}
 .btn.primary{background:var(--accent-pending);border-color:var(--accent-pending);color:#1a1206;}
 .btn.primary:hover{filter:brightness(1.08);}
 .btn.ghost{background:none;border:1px solid var(--border);}
+.btn.ghost.small{padding:6px 10px;font-size:12px;font-weight:600;color:var(--text-muted);}
+.btn.ghost.small:hover{color:var(--accent-done);border-color:var(--accent-done-dim);}
+
+.add-char-bar select{
+  background:var(--surface);border:1px solid var(--border);color:var(--text);
+  border-radius:8px;padding:10px 12px;font-size:13px;font-family:inherit;max-width:220px;
+}
+.template-panel{margin:-6px 0 16px;}
+.template-panel-title{font-size:11px;color:var(--text-muted);letter-spacing:.04em;margin-bottom:6px;}
+.template-list{display:flex;flex-wrap:wrap;gap:8px;}
+.template-chip{
+  display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);
+  border-radius:999px;padding:5px 6px 5px 12px;font-size:12px;
+}
+.template-chip-count{color:var(--text-muted);font-size:11px;}
+.template-chip .item-del{opacity:.6;}
+.template-chip .item-del:hover{opacity:1;}
 
 /* ---- character grid ---- */
 .filter-row{display:flex;gap:8px;margin-bottom:16px;align-items:center;}
@@ -141,7 +158,7 @@ button{font-family:inherit;cursor:pointer;}
 .add-item-row input:focus{outline:none;border-color:var(--accent-pending);}
 .add-item-row button{background:var(--surface-2);border:1px solid var(--border);color:var(--text-muted);
   border-radius:6px;padding:6px 10px;font-size:12px;}
-.char-foot{display:flex;justify-content:flex-end;margin-top:auto;padding-top:4px;}
+.char-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:4px;gap:8px;}
 .toggle-done{
   font-size:12px;font-weight:600;background:none;border:1px solid var(--border);
   color:var(--text-muted);padding:6px 10px;border-radius:6px;
