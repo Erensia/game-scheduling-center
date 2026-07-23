@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>파밍 관제소</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#12151A">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="파밍 관제소">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -14,5 +21,17 @@
 <div id="root" class="loading">불러오는 중…</div>
 
 <script src="app.js"></script>
+<script>
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){
+      // file:// 로 직접 열었을 때는 서비스 워커를 등록할 수 없으므로(브라우저 제약) 건너뛴다.
+      // 설치형 PWA로 쓰려면 간단한 로컬 서버(예: VS Code Live Server, `npx serve`)로 열어야 정상 동작한다.
+      if(location.protocol === 'file:') return;
+      navigator.serviceWorker.register('sw.js').catch(function(err){
+        console.warn('서비스 워커 등록 실패', err);
+      });
+    });
+  }
+</script>
 </body>
 </html>
