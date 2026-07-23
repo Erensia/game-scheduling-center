@@ -87,12 +87,14 @@
 ## 6. 파일 구조
 
 ```
-farming-control-station/
+game-scheduling-center/
 ├── index.html        — 페이지 구조
 ├── style.css          — 디자인 (컬러 토큰, 레이아웃, 컴포넌트 스타일)
 ├── app.js             — 상태 관리, 렌더링, 로컬 저장, 백업 기능
 ├── README.md          — 사용법 안내
-└── DEVELOPMENT.md      — 본 개발 문서
+├── DEVELOPMENT.md      — 본 개발 문서
+└── BK/                — 백업 JSON 파일 보관 폴더
+    └── README.md        — 백업 폴더 사용법
 ```
 
 ## 7. 향후 고려 가능한 개선 방향
