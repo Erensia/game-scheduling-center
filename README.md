@@ -27,12 +27,17 @@
 
 받아둔 백업 파일은 **"백업 불러오기"** 버튼으로 다시 불러올 수 있습니다. (불러오면 현재 데이터를 덮어씁니다)
 
+다운로드한 백업 파일은 프로젝트 폴더 안의 **`BK/`** 폴더에 모아두는 것을 권장합니다.
+
 ## 폴더 구성
 
 ```
-farming-control-station/
+game-scheduling-center/
 ├── index.html   — 페이지 구조
 ├── style.css    — 디자인
 ├── app.js       — 기능 로직 및 데이터 저장
-└── README.md    — 이 파일
+├── README.md    — 이 파일
+├── DEVELOPMENT.md — 개발 문서
+└── BK/          — 백업 JSON 파일 보관 폴더
+    └── README.md  — 백업 폴더 사용법
 ```
