@@ -2,7 +2,7 @@
 // 핵심 파일을 캐싱해 오프라인에서도 앱이 열리도록 한다.
 // 데이터(캐릭터, 체크리스트 등)는 여기서 다루지 않는다 — 그건 app.js가 localStorage로 관리한다.
 
-var CACHE_NAME = 'farming-control-station-v1';
+var CACHE_NAME = 'farming-control-station-v2';
 var CORE_ASSETS = [
   './index.html',
   './style.css',

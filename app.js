@@ -7,6 +7,13 @@
   var saveStatusTimer = null;
   var showSaveStatus = false;
 
+  var HOME_PAGE_SIZE = 5;
+  var homeShowCount = {}; // key: 'weekly:gameId' 또는 'chars:gameId' -> 현재 펼쳐서 보여주는 개수 (임시 UI 상태, 저장 안 함)
+
+  function getHomeShowCount(key){
+    return homeShowCount[key] || HOME_PAGE_SIZE;
+  }
+
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 
   function weekKeyFor(resetDay){
@@ -238,7 +245,11 @@
       var wk = weekKeyFor(g.resetDay);
       var pending = g.weekly.filter(function(w){ return w.doneWeekKey !== wk; });
       if(pending.length === 0) return '';
-      var rows = pending.map(function(w){
+      var showKey = 'weekly:' + g.id;
+      var showCount = getHomeShowCount(showKey);
+      var visible = pending.slice(0, showCount);
+      var remaining = pending.length - visible.length;
+      var rows = visible.map(function(w){
         return (
           '<div class="weekly-row">' +
             '<input type="checkbox" data-home-weekly="' + g.id + '|' + w.id + '">' +
@@ -247,6 +258,8 @@
           '</div>'
         );
       }).join('');
+      var moreBtn = remaining > 0 ?
+        '<button class="home-more" data-home-more="' + showKey + '">+' + remaining + '개 더보기</button>' : '';
       return (
         '<div class="home-group">' +
           '<div class="home-group-head">' +
@@ -254,6 +267,7 @@
             '<button class="home-jump" data-home-jump="' + g.id + '|weekly">게임으로 이동 →</button>' +
           '</div>' +
           '<div class="weekly-list">' + rows + '</div>' +
+          moreBtn +
         '</div>'
       );
     }).join('');
@@ -261,7 +275,11 @@
     var charGroups = state.games.map(function(g){
       var pending = g.characters.filter(function(c){ return !c.completed; });
       if(pending.length === 0) return '';
-      var rows = pending.map(function(c){
+      var showKey = 'chars:' + g.id;
+      var showCount = getHomeShowCount(showKey);
+      var visible = pending.slice(0, showCount);
+      var remaining = pending.length - visible.length;
+      var rows = visible.map(function(c){
         var openItems = c.items.filter(function(it){ return !it.done; }).length;
         var metaText = c.items.length ? (openItems + '/' + c.items.length + ' 항목 남음') : '체크리스트 없음';
         return (
@@ -272,6 +290,8 @@
           '</div>'
         );
       }).join('');
+      var moreBtn = remaining > 0 ?
+        '<button class="home-more" data-home-more="' + showKey + '">+' + remaining + '개 더보기</button>' : '';
       return (
         '<div class="home-group">' +
           '<div class="home-group-head">' +
@@ -279,6 +299,7 @@
             '<button class="home-jump" data-home-jump="' + g.id + '|chars">게임으로 이동 →</button>' +
           '</div>' +
           '<div class="home-char-list">' + rows + '</div>' +
+          moreBtn +
         '</div>'
       );
     }).join('');
@@ -538,6 +559,13 @@
         if(!g) return;
         var c = g.characters.find(function(x){return x.id===parts[1];});
         if(c){ c.completed = true; saveData(); render(); }
+      });
+    });
+    root.querySelectorAll('[data-home-more]').forEach(function(el){
+      el.addEventListener('click', function(){
+        var key = el.getAttribute('data-home-more');
+        homeShowCount[key] = getHomeShowCount(key) + HOME_PAGE_SIZE;
+        render();
       });
     });
     root.querySelectorAll('[data-home-jump]').forEach(function(el){
