@@ -69,6 +69,8 @@ game-scheduling-center/
 ├── icons/       — PWA 아이콘 이미지
 ├── README.md    — 이 파일
 ├── DEVELOPMENT.md — 개발 문서
-└── BK/          — 백업 JSON 파일 보관 폴더
-    └── README.md  — 백업 폴더 사용법
+├── BK/          — 백업 JSON 파일 보관 폴더
+│   └── README.md  — 백업 폴더 사용법
+├── docs/backend/ — 백엔드 전환 설계 문서 (요구사항, ERD, API 명세 등)
+└── backend/     — Spring Boot 백엔드 프로젝트 (진행 중)
 ```

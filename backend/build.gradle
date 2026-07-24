@@ -1,0 +1,55 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '4.1.0'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.erensia'
+version = '0.0.1-SNAPSHOT'
+description = 'Game Scheduling Center backend API (파밍 관제소)'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// 웹 / REST API
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// 데이터 계층 - 02-domain-glossary.md, 03-erd.md 참고
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	runtimeOnly 'org.postgresql:postgresql'
+
+	// 요청 검증 (Bean Validation) - 04-api-spec.md 에러 코드 체계의 VALIDATION_ERROR 처리에 사용
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// API 문서 자동화 - 06-tech-stack.md 결정
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
+
+	// 보일러플레이트 축소
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// 개발 편의 (자동 재시작 등)
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+	// 테스트
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

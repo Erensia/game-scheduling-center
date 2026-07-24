@@ -1,0 +1,22 @@
+# 로컬 개발용 설정. 06-tech-stack.md 결정: 개발/운영 모두 PostgreSQL (엔진 통일),
+# 인스턴스만 분리 - 이 프로파일은 로컬에 직접 띄운(또는 Docker로 띄운) PostgreSQL을 가리킨다.
+#
+# 사전 준비 (README.md 참고):
+#   1. 로컬에 PostgreSQL 실행
+#   2. `game_scheduling_dev` 데이터베이스 생성
+#   3. 아래 username/password가 실제 로컬 환경과 다르면 이 파일만 수정 (커밋해도 되는 로컬 전용 값)
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/game_scheduling_dev
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      # 엔티티 변경사항을 스키마에 자동 반영 - 개발 단계 편의를 위한 설정이며 운영에는 쓰지 않는다.
+      ddl-auto: update
+    show-sql: true
+
+logging:
+  level:
+    org.hibernate.SQL: debug

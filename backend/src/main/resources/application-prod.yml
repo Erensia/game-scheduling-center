@@ -1,0 +1,20 @@
+# 운영용 설정. 실제 값은 소스에 커밋하지 않고 환경변수로 주입한다.
+# 호스팅 서비스/배포 방식은 07-deployment.md에서 확정 예정 (아직 자리만 확보된 상태).
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      # 운영 DB 스키마는 자동 변경하지 않는다 - update는 개발 전용.
+      # 스키마 반영은 검토된 마이그레이션 절차로 진행한다 (구체적인 도구는 아직 미정).
+      ddl-auto: validate
+    show-sql: false
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
