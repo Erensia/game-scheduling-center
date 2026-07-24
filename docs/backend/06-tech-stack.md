@@ -1,17 +1,17 @@
 # 06. 기술 스택 결정서 (초안)
 
-> 각 항목은 제안값이며, 확정 전까지 TBD로 표시. 논의 후 채워나간다.
+> 프로젝트 시작에 필요한 항목은 대부분 확정됨. 배포 관련 항목만 `07-deployment.md`로 이관되어 남아있음.
 
 ## 백엔드
 
-| 항목 | 제안 | 비고 |
+| 항목 | 상태 | 비고 |
 |---|---|---|
-| 언어/프레임워크 | Java, Spring Boot | 포트폴리오 목적과 일치 |
-| 빌드 도구 | Gradle 또는 Maven | GCAS/Todo List 프로젝트에서 쓴 도구와 통일 추천 |
-| DB (개발) | H2 (in-memory 또는 file) | 로컬 개발/테스트 빠른 반복용 |
-| DB (운영) | PostgreSQL | GCAS와 동일 — 학습 곡선 재사용 가능 |
-| ORM | Spring Data JPA | |
-| API 문서화 | springdoc-openapi (Swagger UI) | `04-api-spec.md` 작성 후 자동 문서와 교차 검증 |
+| 언어/프레임워크 | **결정: Java, Spring Boot** | 포트폴리오 목적과 일치 |
+| 빌드 도구 | **결정: Gradle** | Maven 경험이 없어 학습 비용을 줄이는 쪽으로 선택. Spring Boot 생태계에서도 흔하게 쓰여 무리 없음 |
+| DB (운영) | **결정: PostgreSQL** | GCAS와 동일 스택 — 학습 곡선 재사용 가능 |
+| DB (개발) | **결정: PostgreSQL** (로컬 설치 또는 Docker) | H2 대신 운영과 동일 엔진 사용 — SQL 방언 차이로 인한 "로컬은 되는데 배포하면 안 되는" 문제 예방. `application-dev.yml`에서 로컬 DB 접속 정보 관리 |
+| ORM | **결정: Spring Data JPA** | ERD에 설계한 엔티티/관계를 리포지토리 인터페이스로 바로 옮길 수 있음. Spring Boot와 가장 자연스러운 조합 |
+| API 문서화 | **결정: springdoc-openapi (Swagger UI)** | 컨트롤러 애너테이션으로 문서 자동 생성 → `04-api-spec.md`와 실제 구현이 어긋나지 않는지 계속 대조 가능. 배포 시 포트폴리오용으로도 활용 (구 springfox는 유지보수 중단되어 사실상 표준 대체됨) |
 
 ## 프론트엔드
 
@@ -21,7 +21,7 @@
 | CORS | 백엔드에서 프론트엔드 오리진 허용 필요 | 개발 중 `localhost` 포트 vs GitHub Pages 오리진 둘 다 고려 |
 | PWA 오프라인 캐싱 | 백엔드 연동 후 정책 재검토 필요 | 서버 데이터 의존 시 "완전 오프라인" 경험은 제한될 수 있음 (05-migration-plan.md와 별개로 별도 논의) |
 
-## 배포/호스팅 (TBD)
+## 배포/호스팅 (TBD — `07-deployment.md`에서 다룸, 프로젝트 마무리 단계에서 결정)
 
 | 항목 | 후보 | 비고 |
 |---|---|---|
@@ -46,6 +46,8 @@
 
 ## TBD
 
-- [ ] Gradle vs Maven 최종 선택
-- [ ] 배포 호스팅 서비스 최종 선택
-- [ ] PWA 오프라인 정책을 어떻게 재설계할지 (백엔드 연동 이후 별도 논의 필요)
+- [x] ~~Gradle vs Maven 최종 선택~~ → **결정: Gradle**
+- [x] ~~개발용 DB를 H2로 할지 PostgreSQL을 로컬에도 그대로 쓸지~~ → **결정: PostgreSQL로 통일** (엔진은 같게, 로컬/운영 DB 인스턴스만 분리. `dev`/`prod` 프로파일로 접속 정보만 전환)
+- [x] ~~ORM(Spring Data JPA), API 문서화(springdoc-openapi) 확정 여부~~ → **결정: 제안값 그대로 채택**
+- [ ] 배포 호스팅 서비스 최종 선택 — **`07-deployment.md`로 이관, 프로젝트 마무리 단계에서 배포 방식이 정해진 뒤 결정**
+- [ ] PWA 오프라인 정책을 어떻게 재설계할지 — **`07-deployment.md`로 이관**, 백엔드 연동 이후 별도 논의 필요
