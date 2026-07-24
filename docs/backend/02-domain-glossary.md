@@ -24,6 +24,7 @@
 | `id` | `id` | Long (DB에서 재발급) | 프론트 uid() 문자열 → DB PK로 전환 |
 | `name` | `name` | String | 예: "명조" |
 | `resetDay` | `resetDay` | Integer (0~6) | 0=일요일 ~ 6=토요일, 주간 리셋 기준 요일 |
+| *(신규)* | `partySize` | Integer | 이 게임의 파티 슬롯 개수 (예: 명조·젠존제=3). 파티 생성 시 이 값만큼 슬롯 자동 생성 |
 
 ### Character
 | 필드 (현재 JS) | 제안 필드명 | 타입 | 비고 |
@@ -58,7 +59,8 @@
 | 필드 (현재 JS) | 제안 필드명 | 타입 | 비고 |
 |---|---|---|---|
 | `name` | `name` | String | |
-| `slots` | `slots` | List\<PartySlot\> | 각 슬롯은 `characterId` 또는 null |
+| *(신규)* | `partySize` | Integer | 파티 생성 시점의 `Game.partySize`를 복사한 스냅샷. 이후 게임의 `partySize`가 바뀌어도 이 값은 그대로 유지됨 |
+| `slots` | `slots` | List\<PartySlot\> | 파티 생성 시 자신의 `partySize`(스냅샷)만큼 슬롯이 자동 생성됨 |
 
 ## 상태값 계산 용어
 
@@ -70,5 +72,5 @@
 
 ## TBD
 
-- [ ] `Game`, `Character` 등 PK를 `Long`(auto increment)으로 할지 `UUID`로 할지 — 프론트 uid() 문자열과의 호환성 고려해 결정
+- [x] ~~`Game`, `Character` 등 PK를 `Long`(auto increment)으로 할지 `UUID`로 할지~~ → **결정: `Long`** (`01-requirements.md` 7절 참고)
 - [ ] 다국어(용어 번역) 지원 여부는 범위 밖으로 확정할지 논의 필요

@@ -9,5 +9,6 @@
 4. [04-api-spec.md](./04-api-spec.md) — API 명세서
 5. [05-migration-plan.md](./05-migration-plan.md) — 기존 데이터 마이그레이션 계획
 6. [06-tech-stack.md](./06-tech-stack.md) — 기술 스택 및 비기능 요구사항
+7. [07-deployment.md](./07-deployment.md) — 배포/운영 문서 (배포 방식 확정 후 작성 예정, 현재는 자리만 확보)
 
 각 문서 하단의 "TBD" 항목은 아직 결정되지 않은 부분이다. 논의를 거쳐 확정되는 대로 채워나간다.
