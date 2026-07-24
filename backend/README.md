@@ -1,5 +1,7 @@
 # Game Scheduling Center API (백엔드)
 
+> ✅ 개발 환경 준비 완료 (2026-07-24 확인) — Java 21, Gradle 9.5.1(wrapper), PostgreSQL(Docker), 헬스체크(`/api/v1/health`) 정상 동작 확인됨.
+
 `docs/backend/`에서 설계한 문서(요구사항, ERD, API 명세, 기술 스택)를 기반으로 한
 Spring Boot 백엔드 프로젝트입니다. 프론트엔드(`../index.html` 등)는 그대로 두고,
 데이터 계층을 `localStorage`에서 이 API로 교체하는 것이 목표입니다.
@@ -84,6 +86,20 @@ gradle wrapper --gradle-version 9.5.1
    - **네트워크/방화벽·프록시 차단**: `services.gradle.org`(Gradle 배포판), `repo.maven.apache.org`/`repo1.maven.org`(의존성), `plugins.gradle.org`(플러그인) 중 하나라도 막혀있으면 멈추거나 타임아웃. 회사/기관 네트워크라면 우선 의심
    - **Java 버전**: `build.gradle`이 Java 21을 요구하는데 로컬에 21 미만이거나 없으면, Gradle이 Java 21을 자동으로 받으려다 막힐 수 있음 (`java -version`으로 먼저 확인)
    - 이 셋 다 아니라면 Error Log의 메시지 원문이 원인 파악에 필요함
+
+### Lombok을 설치했더니 STS 자체가 안 켜질 때
+
+Lombok을 Eclipse/STS에 설치하면 `STS.ini`(`eclipse.ini`) 맨 아래(`-vmargs` 이후)에 아래와 같은 줄이 자동으로 추가된다.
+
+```
+-javaagent:<lombok.jar 경로>
+```
+
+이 경로에 **한글/일본어/특수문자가 섞여 있으면(예: 사용자 폴더명, 바탕화면의 비ASCII 폴더명)**, JVM이 이 인자를 읽는 과정에서 인코딩이 깨져 STS 자체가 뜨다가 죽는 경우가 있다.
+
+**해결**: STS 설치 폴더 자체를 `C:\sts-...` 처럼 영문/숫자로만 된 경로로 이동하고, `STS.ini`의 `-javaagent` 줄을 새 경로로 수정한다. 워크스페이스 경로도 같은 이유로 비ASCII 문자가 없는 곳으로 잡는 것을 권장한다.
+
+> 참고: 워크스페이스를 바꿔도(`Switch Workspace`) 실제 소스 코드는 디스크의 원래 위치에 그대로 있으므로 사라지지 않는다 — 새 워크스페이스에 프로젝트를 다시 import하면 된다. 다만 Eclipse의 `.metadata`는 워크스페이스 경로에 종속적인 정보를 담고 있어 다른 워크스페이스에 그대로 복사하는 것은 권장하지 않는다 (테마 등 개인 설정은 새로 지정하는 편이 안전).
 
 ## 실행 방법
 
