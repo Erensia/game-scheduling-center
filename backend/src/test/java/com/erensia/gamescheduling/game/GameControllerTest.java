@@ -3,6 +3,9 @@ package com.erensia.gamescheduling.game;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -58,7 +61,9 @@ class GameControllerTest {
 		//              .andExpect(jsonPath("$", hasSize(준비한_리스트_크기)));
 		List<Game> games = List.of(new Game("WW", 1, 3), new Game("ZZZ", 1, 3));
 		when(gameService.getAllGames()).thenReturn(games);
-		mockMvc.perform(get("/games")).andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(2)));
+		mockMvc.perform(get("/games"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", hasSize(2)));
 	}
 
 	@Test
@@ -71,6 +76,24 @@ class GameControllerTest {
 		//              .content(objectMapper.writeValueAsString(요청객체)))
 		//              .andExpect(status().isCreated())
 		//              .andExpect(jsonPath("$.name").value("명조"));
+		GameCreateRequest request = new GameCreateRequest();
+		
+		request.setName("ww");
+		request.setResetDay(1);
+		request.setPartySize(3);
+		
+		Game game = new Game("ww",1,3);
+		
+		when(gameService.createGame(anyString(),anyInt(),anyInt())).thenReturn(game);
+		
+		mockMvc.perform(post("/games").contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.name").value("ww"))
+				.andExpect(jsonPath("$.resetDay").value(1))
+				.andExpect(jsonPath("$.partySize").value(3));
+		
+		verify(gameService).createGame(eq("ww"), eq(1), eq(3));
 	}
 
 	@Test
@@ -79,6 +102,15 @@ class GameControllerTest {
 		// TODO 2. mockMvc.perform(post("/games")...) 호출
 		// TODO 3. status().isBadRequest() 및 jsonPath("$.code").value("VALIDATION_ERROR") 검증
 		//         (이 케이스는 gameService를 스텁할 필요가 없다 - @Valid 단계에서 컨트롤러까지 못 들어가고 막히기 때문)
+		GameCreateRequest request = new GameCreateRequest();
+		request.setName("ww");
+		request.setResetDay(10);
+		request.setPartySize(3);
+		mockMvc.perform(post("/games").contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isOk())
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
 	}
 
 	@Test
@@ -86,7 +118,16 @@ class GameControllerTest {
 		// TODO 1. GameUpdateRequest 준비, gameService.updateGame(anyLong(), anyInt(), anyInt())가
 		//         수정된 Game을 리턴하도록 스텁
 		// TODO 2. mockMvc.perform(patch("/games/{gameId}", 1L)...) 호출 및 200 검증
-	}
+		GameUpdateRequest request = new GameUpdateRequest();
+		request.setResetDay(3);
+		request.setPartySize(4);
+		Game game = new Game("ww",3,4);
+		when(gameService.updateGame(anyLong(), anyInt(), anyInt())).thenReturn(game);
+		mockMvc.perform(patch("/games/{gameId}",1L).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+				.andExpect(jsonPath("$.resetDay").value(request.getResetDay()))
+				.andExpect(jsonPath("$.partySize").value(request.getPartySize()));
+		}
 
 	@Test
 	void updateGame_존재하지_않는_게임이면_404_GAME_NOT_FOUND를_반환한다() throws Exception {
@@ -97,6 +138,10 @@ class GameControllerTest {
 		//         jsonPath("$.code").value("GAME_NOT_FOUND") 검증
 		//         (이 동작은 GlobalExceptionHandler가 처리하므로, @WebMvcTest에 자동으로 포함되는지
 		//          먼저 확인 - 안 되면 @Import(GlobalExceptionHandler.class) 추가 필요)
+		ResourceNotFoundException exception 
+			= new ResourceNotFoundException("GAME_NOT_FOUND", "해당 게임을 찾을 수 없습니다."); 
+		when(gameService.updateGame(anyLong(), anyInt(), anyInt())).thenThrow(exception);
+		
 	}
 
 	@Test
