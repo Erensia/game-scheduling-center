@@ -2,17 +2,16 @@ package com.erensia.gamescheduling;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 /**
  * 파밍 관제소(Game Scheduling Center) 백엔드 진입점.
  *
- * {@code @EnableJpaAuditing}은 01-requirements.md 7절에서 결정한 대로
- * 전 엔티티에 {@code createdAt}을 자동으로 채워주기 위해 켜져 있다.
- * (updatedAt은 MVP 범위에서 도입하지 않기로 결정 - 같은 문서 참고)
+ * JPA Auditing 설정({@code @EnableJpaAuditing})은 config.JpaAuditingConfig로 분리돼 있다.
+ * 이유: 메인 클래스에 직접 붙이면 @WebMvcTest 같은 슬라이스 테스트에서도 타입 필터 없이
+ * 항상 로딩되는 바람에, @Entity 스캔이 빠진 슬라이스에서 JpaAuditingHandler 생성이 실패하는
+ * 문제가 있었다 (2026-07-29 트러블슈팅 참고, config.JpaAuditingConfig 클래스 주석 참고).
  */
 @SpringBootApplication
-@EnableJpaAuditing
 public class GameSchedulingApplication {
 
 	public static void main(String[] args) {
