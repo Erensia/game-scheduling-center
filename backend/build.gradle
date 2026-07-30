@@ -73,4 +73,8 @@ tasks.named('test') {
 // 깨지는 것을 방지 - javac가 항상 UTF-8로 소스를 읽고 클래스 파일을 쓰도록 고정한다.
 tasks.withType(JavaCompile).configureEach {
 	options.encoding = 'UTF-8'
+	// @PathVariable Long gameId처럼 이름을 명시하지 않은 파라미터도 Spring이 리플렉션으로
+	// 이름을 읽을 수 있도록, 컴파일된 클래스에 파라미터 이름 정보를 남긴다.
+	// (2026-07-30 트러블슈팅 - "Name for argument of type [java.lang.Long] not specified" 에러 대응)
+	options.compilerArgs << '-parameters'
 }
