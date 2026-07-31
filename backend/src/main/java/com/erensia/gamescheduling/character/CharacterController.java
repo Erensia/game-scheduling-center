@@ -28,31 +28,45 @@ public class CharacterController {
 
 	private final CharacterService characterService;
 
-	// TODO: GET /games/{gameId}/characters
-	//  - @GetMapping("/games/{gameId}/characters")
-	//  - public ResponseEntity<List<CharacterResponse>> getCharacters(
-	//        @PathVariable Long gameId,
-	//        @RequestParam(required = false) Boolean completed) { ... }
-	//  - GameController.getGames()처럼 List<Character>를 받아서 for문으로 CharacterResponse.from(...) 변환
-	//    (스트림/람다 금지 - for문 사용)
+	// GET /games/{gameId}/characters (필터: ?completed=true/false)
+	@GetMapping("/games/{gameId}/characters")
+	public ResponseEntity<List<CharacterResponse>> getCharacters(
+			@PathVariable Long gameId,
+			@RequestParam(required = false) Boolean completed) {
+		List<Character> characters = characterService.getCharacters(gameId, completed);
+		List<CharacterResponse> responses = new ArrayList<>();
 
-	// TODO: POST /games/{gameId}/characters
-	//  - @PostMapping("/games/{gameId}/characters")
-	//  - public ResponseEntity<CharacterResponse> createCharacter(
-	//        @PathVariable Long gameId,
-	//        @Valid @RequestBody CharacterCreateRequest request) { ... }
-	//  - GameController.createGame()처럼 request에서 필드 꺼내서 서비스에 전달
-	//  - ResponseEntity.status(HttpStatus.CREATED).body(CharacterResponse.from(character))
+		for (Character character : characters) {
+			responses.add(CharacterResponse.from(character));
+		}
+		return ResponseEntity.ok(responses);
+	}
 
-	// TODO: PATCH /characters/{characterId}
-	//  - @PatchMapping("/characters/{characterId}")
-	//  - public ResponseEntity<CharacterResponse> toggleCompleted(@PathVariable Long characterId) { ... }
-	//  - 04-api-spec.md: "completed 토글 - 이름 수정은 MVP 범위에서 제외"
-	//  - 요청 바디 없음에 주의 (@RequestBody 받지 않음, GameController의 PATCH와 다른 부분)
+	// POST /games/{gameId}/characters (name, templateId는 이번 사이클에서 미사용)
+	@PostMapping("/games/{gameId}/characters")
+	public ResponseEntity<CharacterResponse> createCharacter(
+			@PathVariable Long gameId,
+			@Valid @RequestBody CharacterCreateRequest request) {
+		String name = request.getName();
+		Character character = characterService.createCharacter(gameId, name);
 
-	// TODO: DELETE /characters/{characterId}
-	//  - @DeleteMapping("/characters/{characterId}")
-	//  - public ResponseEntity<Void> deleteCharacter(@PathVariable Long characterId) { ... }
-	//  - GameController.deleteGame()과 동일: ResponseEntity.noContent().build()
+		return ResponseEntity.status(HttpStatus.CREATED).body(CharacterResponse.from(character));
+	}
+
+	// PATCH /characters/{characterId} - completed 토글 (요청 바디 없음)
+	@PatchMapping("/characters/{characterId}")
+	public ResponseEntity<CharacterResponse> toggleCompleted(@PathVariable Long characterId) {
+		Character character = characterService.toggleCompleted(characterId);
+
+		return ResponseEntity.ok(CharacterResponse.from(character));
+	}
+
+	// DELETE /characters/{characterId}
+	@DeleteMapping("/characters/{characterId}")
+	public ResponseEntity<Void> deleteCharacter(@PathVariable Long characterId) {
+		characterService.deleteCharacter(characterId);
+
+		return ResponseEntity.noContent().build();
+	}
 
 }

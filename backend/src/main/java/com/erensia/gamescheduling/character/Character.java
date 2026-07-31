@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
  *
  * 참고: id, createdAt은 BaseEntity에서 상속받으므로 여기서 다시 선언하지 않는다 (Game과 동일).
  * 참고: checklistItems는 이번 사이클에서 다루지 않는다 - ChecklistItem 엔티티가 아직 없으므로
- *       필드를 추가하지 말 것. 다음 사이클(체크리스트 항목 도메인)에서 @OneToMany(mappedBy = "character")로 추가.
+ *       필드를 추가하지 않았다. 다음 사이클(체크리스트 항목 도메인)에서 @OneToMany(mappedBy = "character")로 추가 예정.
  */
 @Entity
 @Table(name = "characters")
@@ -30,28 +30,26 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Character extends BaseEntity {
 
-	// TODO: game 필드
-	//  - @ManyToOne(fetch = FetchType.LAZY)
-	//  - @JoinColumn(name = "game_id", nullable = false)
-	//  - private Game game;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "game_id", nullable = false)
+	private Game game;
 
-	// TODO: name 필드
-	//  - @Column(nullable = false)
-	//  - private String name;
+	@Column(nullable = false)
+	private String name;
 
-	// TODO: completed 필드
-	//  - @Column(nullable = false)
-	//  - private boolean completed;
-	//  - Game의 partySize처럼 Integer 래퍼가 아니라 primitive boolean으로 (null 상태 원천 차단)
+	@Column(nullable = false)
+	private boolean completed;
 
-	// TODO: 생성자 작성 (Game.java의 public Game(String name, Integer resetDay, Integer partySize) 패턴 참고)
-	//  - public Character(Game game, String name) { ... }
-	//  - completed는 생성자 파라미터로 받지 않고 필드 기본값(false)으로 시작
-	//    (자바 boolean 기본값이 false이므로 별도 초기화 코드 없이도 false로 시작됨)
+	public Character(Game game, String name) {
+		this.game = game;
+		this.name = name;
+	}
 
-	// TODO: completed 토글 메서드 (Game.java의 updateSettings처럼 엔티티 안에서 상태 변경을 캡슐화)
-	//  - public void toggleCompleted() {
-	//        this.completed = !this.completed;
-	//    }
+	/**
+	 * completed 상태를 반전시킨다. PATCH /characters/{characterId}에서 사용.
+	 */
+	public void toggleCompleted() {
+		this.completed = !this.completed;
+	}
 
 }
