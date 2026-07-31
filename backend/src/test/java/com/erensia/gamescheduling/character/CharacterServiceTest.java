@@ -50,6 +50,8 @@ class CharacterServiceTest {
 	@BeforeEach
 	void setUp() {
 		// TODO: existingGame, existingCharacter 초기화 (GameServiceTest의 existingGame 참고)
+		existingGame = new Game("zzz", 1, 3);
+		existingCharacter = new Character(existingGame, "제인 도");
 	}
 
 	@Test
@@ -58,6 +60,10 @@ class CharacterServiceTest {
 		// TODO: characterRepository.findByGameIdOrderByIdAsc(gameId) -> 목록 스텁
 		// TODO: characterService.getCharacters(gameId, null) 호출
 		// TODO: 결과 검증 + findByGameIdAndCompletedOrderByIdAsc는 호출되지 않았는지 검증(verify never)
+		when(gameRepository.existsById(1L)).thenReturn(true);
+		List<Character> result = characterRepository.findByGameIdOrderByIdAsc(1L);
+		characterService.getCharacters(1L, null);
+		verify(characterRepository, never()).findByGameIdAndCompletedOrderByIdAsc(1L, false);
 	}
 
 	@Test
