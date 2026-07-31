@@ -16,7 +16,9 @@ import lombok.NoArgsConstructor;
  * docs/backend/03-erd.md의 CHARACTER, docs/backend/02-domain-glossary.md 참고.
  *
  * 필드:
- *  - game      : 소속 게임 (Game 1 : N Character, Game 삭제 시 cascade 삭제)
+ *  - game      : 소속 게임 (Game 1 : N Character). Game 삭제 시 cascade 삭제됨 -
+ *                (2026-07-31 결정) DB FK cascade가 아니라 Game.java의 @OneToMany
+ *                cascade + orphanRemoval로 처리 (Game.java 참고).
  *  - name      : 캐릭터 이름. 이름 수정은 04-api-spec.md에서 MVP 범위 밖으로 결정됨
  *  - completed : "더 이상 파밍 안 해도 됨" 표시. PATCH /characters/{characterId}로 토글
  *

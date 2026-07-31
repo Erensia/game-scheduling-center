@@ -82,7 +82,7 @@ erDiagram
 
 | 관계 | 설명 |
 |---|---|
-| Game 1 : N Character | 게임 삭제 시 캐릭터도 함께 삭제 (cascade) |
+| Game 1 : N Character | 게임 삭제 시 캐릭터도 함께 삭제 (cascade) — 구현 방식은 아래 설계 메모 참고 |
 | Game 1 : N WeeklyContent | 게임 삭제 시 함께 삭제 |
 | Game 1 : N CharacterTemplate | 게임 삭제 시 함께 삭제 (템플릿은 게임 종속적) |
 | Game 1 : N Party | 게임 삭제 시 함께 삭제 |
@@ -111,6 +111,15 @@ erDiagram
   같은 파티 안에서 슬롯 인덱스가 중복되지 않도록 DB 레벨에서 보장한다.
 - **(해결) 게임의 `partySize`를 나중에 변경해도 기존 파티는 영향받지 않는다.**
   위 `Party.partySize` 스냅샷 결정으로 해결됨 — 기존 파티는 자신의 스냅샷 값을 그대로 쓰므로 `Game.partySize` 변경과 무관하다 (`01-requirements.md` 7절, `04-api-spec.md` 참고).
+- **Game 삭제 시 Character 연쇄 삭제는 DB FK cascade가 아니라 JPA 레벨로 처리한다 (2026-07-31 결정).**
+  `ddl-auto: update`로 Hibernate가 생성하는 FK 제약조건에는 `ON DELETE CASCADE`가 기본으로 붙지 않는다.
+  대신 `Game` 엔티티에 `@OneToMany(mappedBy = "game", cascade = CascadeType.REMOVE, orphanRemoval = true)`로
+  `characters` 컬렉션을 선언해두고, `GameService.deleteGame()`이 쓰는 `gameRepository.deleteById(id)`가
+  내부적으로 `findById` 후 `delete(entity)`를 호출하는 구조라 이 설정만으로 캐릭터까지 함께 삭제된다.
+  (계기: Character 도메인 코드 리뷰 중 발견 — 엔티티 주석엔 "cascade 삭제"라고 적혀있었지만 실제 구현은 빠져 있었음.
+  이 문서의 위 관계 요약 표는 처음부터 cascade로 정책이 맞았고, 누락됐던 건 구현 쪽.)
+  구현은 `Game.java`에 TODO로 남겨둔 상태 — 완료되면 `CharacterIntegrationTest`의
+  "게임을_삭제하면_소속된_캐릭터도_함께_연쇄_삭제된다" 테스트가 통과하는 것으로 확인.
 - **(확장 메모) 인증 도입 시 `Game`에 `ownerId`(FK → User) 추가 예정.**
   MVP는 인증 없이 개발하기로 결정했다 (`01-requirements.md` 참고). 여러 사용자를 지원하게 되면
   `Game` 테이블에 `ownerId`를 추가하고, `Character`/`WeeklyContent`/`CharacterTemplate`/`Party`는

@@ -1,9 +1,15 @@
 package com.erensia.gamescheduling.game;
 
+import com.erensia.gamescheduling.character.Character;
 import com.erensia.gamescheduling.common.BaseEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -17,6 +23,12 @@ import lombok.NoArgsConstructor;
  *  - partySize   : 새로 만드는 파티에 적용될 인원수. 생성 후 PATCH로 변경 가능
  *                  (이미 만들어진 Party에는 영향 없음 - Party가 자신의 partySize를 스냅샷으로 저장하기 때문.
  *                   이 결정은 01-requirements.md 7절 참고)
+ *  - characters  : 소속 캐릭터 목록 (Character가 game 필드로 소유). 삭제 정책(2026-07-31 결정):
+ *                  Game 삭제 시 소속 Character를 전부 연쇄 삭제한다. DB 레벨 FK cascade가 아니라
+ *                  JPA 레벨(cascade = CascadeType.REMOVE, orphanRemoval = true)로 처리한다 -
+ *                  GameService.deleteGame()이 쓰는 gameRepository.deleteById()가 내부적으로
+ *                  findById 후 delete(entity)를 호출하므로 이 설정만으로 cascade가 정상 동작한다.
+ *                  (03-erd.md 설계 메모, CharacterIntegrationTest 참고)
  */
 @Entity
 @Table(name = "games")
@@ -32,6 +44,9 @@ public class Game extends BaseEntity {
 
 	@Column(nullable = false)
 	private Integer partySize;
+
+	@OneToMany(mappedBy = "game", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
+	private List<Character> characters = new ArrayList<>();
 
 	public Game(String name, Integer resetDay, Integer partySize) {
 		this.name = name;

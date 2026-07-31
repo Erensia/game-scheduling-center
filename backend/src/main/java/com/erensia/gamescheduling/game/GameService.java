@@ -52,6 +52,11 @@ public class GameService {
 
 	/**
 	 * 게임 삭제 (DELETE /games/{gameId}).
+	 *
+	 * 삭제 정책 (2026-07-31 결정): 소속된 Character까지 연쇄 삭제한다.
+	 * deleteById(id)는 내부적으로 findById 후 delete(entity)를 호출하고,
+	 * Game 엔티티의 characters 필드가 @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)로
+	 * 선언돼 있어서(Game.java 참고) 이 메서드 자체는 그대로 두고 엔티티 설정만으로 캐릭터까지 함께 삭제된다.
 	 */
 	public void deleteGame(Long gameId) {
 		if (!gameRepository.existsById(gameId)) {
