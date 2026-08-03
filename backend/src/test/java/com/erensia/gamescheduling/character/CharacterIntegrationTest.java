@@ -59,6 +59,8 @@ class CharacterIntegrationTest {
 	void cleanUp() {
 		// TODO: characterRepository.deleteAll() 먼저, 그 다음 gameRepository.deleteAll()
 		// (FK 순서 주의 - Character가 Game을 참조하므로 자식부터 지워야 함)
+		characterRepository.deleteAll();
+		gameRepository.deleteAll();
 	}
 
 	@Test
@@ -67,6 +69,7 @@ class CharacterIntegrationTest {
 		// TODO: CharacterCreateRequest 준비 후 post("/games/{gameId}/characters", gameId) 호출
 		// TODO: status().isCreated() 검증
 		// TODO: get("/games/{gameId}/characters", gameId) 호출해서 방금 만든 캐릭터가 보이는지 검증
+		gameRepository.save(new Game("wuwa", 1, 3));
 	}
 
 	@Test
