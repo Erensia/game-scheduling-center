@@ -62,10 +62,11 @@ public class WeeklyContentService {
 			throw new ResourceNotFoundException("WEEKLY_CONTENT_NOT_FOUND", "주간 컨텐츠를 찾을 수 없습니다.");
 		}
 		WeeklyContent weeklyContent = selectedWeeklyContent.get();
+		LocalDate today = LocalDate.now();
 		int resetDay = weeklyContent.getGame().getResetDay();
-		int presentDay = LocalDate.now().getDayOfWeek().getValue();
+		int presentDay = today.getDayOfWeek().getValue();
 		int diff = ((presentDay % 7) - resetDay + 7) % 7;
-		LocalDate currentWeekStart = LocalDate.now().minusDays(diff);
+		LocalDate currentWeekStart = today.minusDays(diff);
 		weeklyContent.toggleWeeklyContent(currentWeekStart);
 
 		return weeklyContent;
