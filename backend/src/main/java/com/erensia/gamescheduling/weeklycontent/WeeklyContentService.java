@@ -30,10 +30,10 @@ public class WeeklyContentService {
 	 * CharacterService.getCharacters()와 동일한 패턴 - gameId 존재 검증 후 조회.
 	 */
 	public List<WeeklyContent> getWeeklyContents(Long gameId) {
-		// TODO: gameRepository.existsById(gameId)로 게임 존재 검증.
-		//       존재하지 않으면 ResourceNotFoundException("GAME_NOT_FOUND", "해당 게임을 찾을 수 없습니다.") 던지기.
-		// TODO: weeklyContentRepository의 게임별 목록 조회 메서드(WeeklyContentRepository에서 작성한 것) 호출 후 반환.
-		return null;
+		if (!gameRepository.existsById(gameId)) {
+			throw new ResourceNotFoundException("GAME_NOT_FOUND", "해당 게임을 찾을 수 없습니다.");
+		}
+		return weeklyContentRepository.findByGameIdOrderByIdAsc(gameId);
 	}
 
 	/**
@@ -41,10 +41,14 @@ public class WeeklyContentService {
 	 * CharacterService.createCharacter(Long gameId, String name)와 동일한 패턴.
 	 */
 	public WeeklyContent createWeeklyContent(Long gameId, String name) {
-		// TODO: gameRepository.findById(gameId)로 Game 조회.
-		//       없으면 ResourceNotFoundException("GAME_NOT_FOUND", ...) 던지기.
-		// TODO: new WeeklyContent(game, name)으로 엔티티 생성 후 weeklyContentRepository.save()로 저장, 반환.
-		return null;
+		Optional<Game> selectedGame = gameRepository.findById(gameId);
+		if (selectedGame.isEmpty()) {
+			throw new ResourceNotFoundException("GAME_NOT_FOUND", "해당 게임을 찾을 수 없습니다.");
+		}
+		Game game = selectedGame.get();
+		WeeklyContent weeklyContent = new WeeklyContent(game, name);
+
+		return weeklyContentRepository.save(weeklyContent);
 	}
 
 	/**
@@ -53,20 +57,18 @@ public class WeeklyContentService {
 	 */
 	@Transactional
 	public WeeklyContent toggleCompletion(Long weeklyId) {
-		// TODO: weeklyContentRepository.findById(weeklyId)로 조회.
-		//       없으면 ResourceNotFoundException("WEEKLY_CONTENT_NOT_FOUND", ...) 던지기.
-		//
-		// TODO: weeklyContent.getGame().getResetDay()를 이용해 "이번 주 시작일"(LocalDate)을 계산하세요.
-		//       프론트엔드 app.js의 weekKeyFor(resetDay) 로직(19번째 줄)을 자바로 옮기는 작업입니다:
-		//         var diff = (오늘요일 - resetDay + 7) % 7;
-		//         결과 = 오늘 날짜에서 diff일을 뺀 날짜
-		//       힌트: LocalDate.now(), LocalDate.getDayOfWeek()(월=1~일=7, DayOfWeek.getValue()),
-		//       그런데 이 프로젝트의 resetDay는 0=일요일~6=토요일이라 요일 값 변환에 주의하세요.
-		//       LocalDate.minusDays(long)로 날짜를 뺍니다.
-		//
-		// TODO: weeklyContent.toggleCompletion(계산한주시작일) 호출.
-		//       @Transactional + dirty checking이라 별도 save() 호출은 필요 없습니다.
-		return null;
+		Optional<WeeklyContent> selectedWeeklyContent = weeklyContentRepository.findById(weeklyId);
+		if (selectedWeeklyContent.isEmpty()) {
+			throw new ResourceNotFoundException("WEEKLY_CONTENT_NOT_FOUND", "주간 컨텐츠를 찾을 수 없습니다.");
+		}
+		WeeklyContent weeklyContent = selectedWeeklyContent.get();
+		int resetDay = weeklyContent.getGame().getResetDay();
+		int presentDay = LocalDate.now().getDayOfWeek().getValue();
+		int diff = ((presentDay % 7) - resetDay + 7) % 7;
+		LocalDate currentWeekStart = LocalDate.now().minusDays(diff);
+		weeklyContent.toggleWeeklyContent(currentWeekStart);
+
+		return weeklyContent;
 	}
 
 	/**
@@ -74,9 +76,10 @@ public class WeeklyContentService {
 	 * CharacterService.deleteCharacter()와 동일한 패턴.
 	 */
 	public void deleteWeeklyContent(Long weeklyId) {
-		// TODO: weeklyContentRepository.existsById(weeklyId)로 존재 검증.
-		//       없으면 ResourceNotFoundException("WEEKLY_CONTENT_NOT_FOUND", ...) 던지기.
-		// TODO: weeklyContentRepository.deleteById(weeklyId) 호출.
+		if (!weeklyContentRepository.existsById(weeklyId)) {
+			throw new ResourceNotFoundException("WEEKLY_CONTENT_NOT_FOUND", "주간 컨텐츠를 찾을 수 없습니다.");
+		}
+		weeklyContentRepository.deleteById(weeklyId);
 	}
 
 }

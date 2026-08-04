@@ -1,5 +1,6 @@
 package com.erensia.gamescheduling.weeklycontent;
 
+import java.time.LocalDate;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -18,13 +19,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WeeklyContentResponse {
 
-	// TODO: 필드를 선언하세요 - id, gameId, name, lastCompletedWeekStart, completedThisWeek.
-	//       타입은 각각 Long, Long, String, java.time.LocalDate, boolean.
-	//       CharacterResponse의 필드 선언부(id, gameId, name, completed, items)와 같은 형태입니다.
+	private final Long id;
+	private final Long gameId;
+	private final String name;
+	private final LocalDate lastCompletedWeekStart;
+	private final boolean completedThisWeek;
 
-	// TODO: from(WeeklyContent weeklyContent, boolean completedThisWeek) 정적 팩토리 메서드를 작성하세요.
-	//       CharacterResponse.from(Character character)와 달리 파라미터가 하나 더 필요합니다 -
-	//       completedThisWeek는 엔티티 필드가 아니라 서비스 레이어가 계산해 넘겨주는 값이기 때문입니다.
-	//       weeklyContent.getGame().getId()로 gameId를 평탄화하는 것도 잊지 마세요.
+	public static WeeklyContentResponse from(WeeklyContent weeklyContent, boolean completedThisWeek) {
+		return new WeeklyContentResponse(weeklyContent.getId(), weeklyContent.getGame().getId(),
+				weeklyContent.getName(), weeklyContent.getLastCompletedWeekStart(),
+				completedThisWeek);
+	}
 
 }

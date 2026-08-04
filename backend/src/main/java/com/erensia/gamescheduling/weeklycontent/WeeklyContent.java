@@ -43,23 +43,15 @@ public class WeeklyContent extends BaseEntity {
 	@Column(nullable = true)
 	private LocalDate lastCompletedWeekStart;
 
-	// TODO: Game game, String name을 받는 생성자를 작성하세요.
-	// Character(Game game, String name) 생성자(Character.java 참고)와 완전히 동일한 패턴입니다.
-	// lastCompletedWeekStart는 생성 시점엔 "아직 완료 안 함" 상태이므로 필드 기본값(null) 그대로 둡니다.
 	public WeeklyContent(Game game, String name) {
 		this.game = game;
 		this.name = name;
 	}
 
-	// TODO: 완료 상태를 토글하는 메서드를 작성하세요.
-	// Character.toggleCompleted(), ChecklistItem.toggleDone()과 이 도메인의 차이점:
-	// 그 둘은 boolean 필드를 그냥 반전(!)시키면 끝이지만, 이 도메인은 "언제 완료했는지" 날짜 자체를
-	// 저장하는 구조라 단순 반전이 아닙니다.
-	// - 메서드가 "이번 주 시작일"을 파라미터로 받는다고 가정하세요 (예: LocalDate currentWeekStart).
-	//   엔티티가 직접 오늘 날짜나 resetDay 계산 로직을 알 필요는 없습니다 - 그건 서비스 레이어의 책임입니다.
-	// - lastCompletedWeekStart가 null이면(=미완료) currentWeekStart로 채워 "완료 처리".
-	// - lastCompletedWeekStart에 이미 값이 있으면(=완료됨) null로 되돌려 "완료 취소".
-	// - if/else로 분기하세요 (람다·삼항연산자 남발 금지, 이 프로젝트 컨벤션).
+	/**
+	 * 완료 상태를 토글한다. 미완료(null)면 currentWeekStart로 채워 완료 처리하고,
+	 * 이미 완료된 상태면 null로 되돌려 완료를 취소한다. PATCH /weekly/{weeklyId}/toggle에서 사용.
+	 */
 	public void toggleWeeklyContent(LocalDate currentWeekStart) {
 		if (this.lastCompletedWeekStart == null) {
 			this.lastCompletedWeekStart = currentWeekStart;
