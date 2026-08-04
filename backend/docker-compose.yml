@@ -1,0 +1,17 @@
+# backend/docker-compose.yml
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: game-scheduling-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: game_scheduling_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - game-scheduling-pgdata:/var/lib/postgresql/data
+
+volumes:
+  game-scheduling-pgdata:

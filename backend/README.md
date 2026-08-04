@@ -23,17 +23,16 @@ Spring Boot 백엔드 프로젝트입니다. 프론트엔드(`../index.html` 등
    ```bash
    java -version
    ```
-2. **PostgreSQL** 설치 및 실행 (로컬 설치 또는 Docker 둘 다 가능)
-   ```bash
-   # Docker를 쓰는 경우 예시
-   docker run --name game-scheduling-db -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
-   ```
-3. 개발용 데이터베이스 생성 (DB 이름은 `application-dev.yml`과 일치해야 함)
-   ```bash
-   psql -U postgres -c "CREATE DATABASE game_scheduling_dev;"
-   ```
-   접속 정보(사용자명/비밀번호)가 로컬 환경과 다르면 `src/main/resources/application-dev.yml`을
-   직접 수정하세요 (이 파일은 로컬 개발 전용이라 커밋해도 무방합니다).
+2. **PostgreSQL** — `backend/docker-compose.yml`로 기동 (집 PC/회사 PC 공통, 2026-08-04부터 통일)
+```bash
+   cd backend
+   docker compose up -d
+```
+   `game_scheduling_dev` 데이터베이스는 컨테이너 최초 기동 시 `docker-compose.yml`의
+   `POSTGRES_DB` 값으로 자동 생성되므로 별도의 `CREATE DATABASE` 작업은 필요 없습니다.
+   접속 정보(사용자명/비밀번호)가 로컬 환경과 다르면 `docker-compose.yml`과
+   `src/main/resources/application-dev.yml`을 함께 수정하세요 (둘 다 로컬 개발 전용 값이라 커밋해도 무방합니다).
+   컨테이너에는 `restart: unless-stopped`가 걸려 있어 Docker Desktop을 재시작해도 자동으로 다시 뜹니다.
 
 ## Gradle Wrapper에 대한 안내
 
