@@ -1,6 +1,9 @@
 package com.erensia.gamescheduling.game;
 
 import com.erensia.gamescheduling.common.exception.ResourceNotFoundException;
+
+import jakarta.transaction.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +42,7 @@ public class GameService {
 	 * findById로 조회한 game은 JPA가 관리 중인 상태라, updateSettings로 필드만 바꾸면
 	 * 트랜잭션이 끝날 때 자동으로 UPDATE 쿼리가 나간다 (dirty checking) - save() 호출 불필요.
 	 */
+	@Transactional
 	public Game updateGame(Long gameId, Integer resetDay, Integer partySize) {
 		Optional<Game> selectedGame = gameRepository.findById(gameId);
 		if (selectedGame.isEmpty()) {

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Character 관련 비즈니스 로직 계층.
@@ -54,6 +55,7 @@ public class CharacterService {
 	 * completed 토글 (PATCH /characters/{characterId}).
 	 * dirty checking으로 트랜잭션 커밋 시 자동 반영되므로 별도 save() 호출이 필요 없다.
 	 */
+	@Transactional
 	public Character toggleCompleted(Long characterId) {
 		Optional<Character> selectedCharacter = characterRepository.findById(characterId);
 		if (selectedCharacter.isEmpty()) {
