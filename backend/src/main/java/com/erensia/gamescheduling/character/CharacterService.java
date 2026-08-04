@@ -54,10 +54,13 @@ public class CharacterService {
 	/**
 	 * completed 토글 (PATCH /characters/{characterId}).
 	 * dirty checking으로 트랜잭션 커밋 시 자동 반영되므로 별도 save() 호출이 필요 없다.
+	 * findByIdWithChecklistItems()로 조회해 checklistItems를 함께 즉시 로딩한다 -
+	 * CharacterResponse.from()이 컨트롤러 단에서 이 컬렉션을 읽을 때
+	 * LazyInitializationException이 나지 않도록 하기 위함 (CharacterRepository 참고).
 	 */
 	@Transactional
 	public Character toggleCompleted(Long characterId) {
-		Optional<Character> selectedCharacter = characterRepository.findById(characterId);
+		Optional<Character> selectedCharacter = characterRepository.findByIdWithChecklistItems(characterId);
 		if (selectedCharacter.isEmpty()) {
 			throw new ResourceNotFoundException("CHARACTER_NOT_FOUND", "해당 캐릭터를 찾을 수 없습니다.");
 		}

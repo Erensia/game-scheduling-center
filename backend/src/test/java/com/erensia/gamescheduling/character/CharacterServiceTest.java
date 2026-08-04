@@ -102,14 +102,14 @@ class CharacterServiceTest {
 
 	@Test
 	void toggleCompleted_존재하는_캐릭터면_completed를_반전시킨다() {
-		when(characterRepository.findById(1L)).thenReturn(Optional.of(existingCharacter));
+		when(characterRepository.findByIdWithChecklistItems(1L)).thenReturn(Optional.of(existingCharacter));
 		Character result = characterService.toggleCompleted(1L);
 		assertThat(result.isCompleted()).isEqualTo(true);
 	}
 
 	@Test
 	void toggleCompleted_존재하지_않으면_CHARACTER_NOT_FOUND를_던진다() {
-		when(characterRepository.findById(1L)).thenReturn(Optional.empty());
+		when(characterRepository.findByIdWithChecklistItems(1L)).thenReturn(Optional.empty());
 		assertThatThrownBy(() -> characterService.toggleCompleted(1L))
 		.isInstanceOf(ResourceNotFoundException.class);
 	}
