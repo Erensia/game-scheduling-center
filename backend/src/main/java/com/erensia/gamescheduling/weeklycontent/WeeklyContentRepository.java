@@ -1,7 +1,6 @@
 package com.erensia.gamescheduling.weeklycontent;
 
 import java.util.List;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

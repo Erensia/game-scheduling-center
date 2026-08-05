@@ -3,7 +3,6 @@ package com.erensia.gamescheduling.game;
 import com.erensia.gamescheduling.character.Character;
 import com.erensia.gamescheduling.common.BaseEntity;
 import com.erensia.gamescheduling.weeklycontent.WeeklyContent;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,12 +30,11 @@ import lombok.NoArgsConstructor;
  *                  GameService.deleteGame()이 쓰는 gameRepository.deleteById()가 내부적으로
  *                  findById 후 delete(entity)를 호출하므로 이 설정만으로 cascade가 정상 동작한다.
  *                  (03-erd.md 설계 메모, CharacterIntegrationTest 참고)
- *  - weeklyContents : TODO (WeeklyContent 도메인 작업) - characters와 동일한 이유로 필요합니다.
- *                  03-erd.md "Game 1 : N WeeklyContent, 게임 삭제 시 함께 삭제" 규칙을 만족시키려면
- *                  characters 필드와 완전히 같은 패턴(@OneToMany(mappedBy = "game", cascade = REMOVE,
- *                  orphanRemoval = true))의 List<WeeklyContent> 필드가 이 엔티티에 있어야
- *                  GameService.deleteGame()의 기존 deleteById() 호출 하나로 WeeklyContent까지
- *                  함께 cascade 삭제됩니다. 지금은 없어서 Game 삭제 시 WeeklyContent가 고아로 남습니다.
+ *  - weeklyContents : 소속 주간 컨텐츠 목록 (WeeklyContent가 game 필드로 소유). characters와 완전히
+ *                  같은 이유·같은 패턴(cascade = CascadeType.REMOVE, orphanRemoval = true)으로
+ *                  Game 삭제 시 소속 WeeklyContent를 전부 연쇄 삭제한다 (03-erd.md "Game 1 : N
+ *                  WeeklyContent, 게임 삭제 시 함께 삭제" 규칙). GameService.deleteGame()의 기존
+ *                  gameRepository.deleteById() 호출 하나로 WeeklyContent까지 cascade 삭제된다.
  */
 @Entity
 @Table(name = "games")
@@ -56,12 +54,8 @@ public class Game extends BaseEntity {
 	@OneToMany(mappedBy = "game", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Character> characters = new ArrayList<>();
 	
-	@OneToMany(mappedBy = "game", cascade = CascadeType.REMOVE, orphanRemoval = true)
-	private List<WeeklyContent> weeklyContent = new ArrayList<>();
-
-	// TODO (WeeklyContent 도메인): characters 필드 바로 위 주석 참고.
-	// weeklycontent.WeeklyContent를 import하고, characters와 동일한 @OneToMany 설정으로
-	// List<WeeklyContent> weeklyContents 필드를 추가하세요 (초기값도 new ArrayList<>()로 동일하게).
+	@OneToMany(mappedBy = "game", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
+	private List<WeeklyContent> weeklyContents = new ArrayList<>();
 
 	public Game(String name, Integer resetDay, Integer partySize) {
 		this.name = name;

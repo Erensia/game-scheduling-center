@@ -1,5 +1,6 @@
 package com.erensia.gamescheduling.weeklycontent;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,7 +16,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class WeeklyContentCreateRequest {
 
-	// TODO: name 필드를 선언하세요. GameCreateRequest.name, CharacterCreateRequest.name과 동일하게
-	//       @NotBlank로 공백 검증을 겁니다 (jakarta.validation.constraints.NotBlank import 필요).
+	@NotBlank
+	private String name;
 
 }

@@ -30,11 +30,14 @@ public class WeeklyContentController {
 	// GET /games/{gameId}/weekly
 	@GetMapping("/games/{gameId}/weekly")
 	public ResponseEntity<List<WeeklyContentResponse>> getWeeklyContents(@PathVariable Long gameId) {
-		// TODO: weeklyContentService.getWeeklyContents(gameId) 호출.
-		// TODO: 결과 List<WeeklyContent>를 순회하며 WeeklyContentResponse.from(...)으로 변환해
-		//       새 ArrayList에 담고 ResponseEntity.ok(...)로 반환하세요.
-		//       GameController.getGames(), CharacterController.getCharacters()와 동일한 패턴입니다 (람다 금지, for문 사용).
-		return null;
+		List<WeeklyContent> weeklyContents = weeklyContentService.getWeeklyContents(gameId);
+		List<WeeklyContentResponse> responses = new ArrayList<>();
+
+		for (WeeklyContent weeklyContent : weeklyContents) {
+			boolean isCompletedThisWeek = weeklyContentService.isCompletedThisWeek(weeklyContent);
+			responses.add(WeeklyContentResponse.from(weeklyContent, isCompletedThisWeek));
+		}
+		return ResponseEntity.ok(responses);
 	}
 
 	// POST /games/{gameId}/weekly (name)
@@ -42,23 +45,26 @@ public class WeeklyContentController {
 	public ResponseEntity<WeeklyContentResponse> createWeeklyContent(
 			@PathVariable Long gameId,
 			@Valid @RequestBody WeeklyContentCreateRequest request) {
-		// TODO: request에서 name을 꺼내 weeklyContentService.createWeeklyContent(gameId, name) 호출.
-		// TODO: ResponseEntity.status(HttpStatus.CREATED).body(WeeklyContentResponse.from(...))로 반환.
-		return null;
+		WeeklyContent weeklyContent = weeklyContentService.createWeeklyContent(gameId, request.getName());
+
+		return ResponseEntity.status(HttpStatus.CREATED).body(WeeklyContentResponse.from(weeklyContent, false));
 	}
 
 	// PATCH /weekly/{weeklyId}/toggle - 요청 바디 없음
 	@PatchMapping("/weekly/{weeklyId}/toggle")
 	public ResponseEntity<WeeklyContentResponse> toggleCompletion(@PathVariable Long weeklyId) {
-		// TODO: weeklyContentService.toggleCompletion(weeklyId) 호출 후 WeeklyContentResponse.from(...)으로 감싸 반환.
-		return null;
+		WeeklyContent weeklyContent = weeklyContentService.toggleCompletion(weeklyId);
+		boolean isCompletedThisWeek = weeklyContentService.isCompletedThisWeek(weeklyContent);
+
+		return ResponseEntity.ok(WeeklyContentResponse.from(weeklyContent, isCompletedThisWeek));
 	}
 
 	// DELETE /weekly/{weeklyId}
 	@DeleteMapping("/weekly/{weeklyId}")
 	public ResponseEntity<Void> deleteWeeklyContent(@PathVariable Long weeklyId) {
-		// TODO: weeklyContentService.deleteWeeklyContent(weeklyId) 호출 후 ResponseEntity.noContent().build() 반환.
-		return null;
+		weeklyContentService.deleteWeeklyContent(weeklyId);
+
+		return ResponseEntity.noContent().build();
 	}
 
 }
