@@ -35,6 +35,13 @@ import lombok.NoArgsConstructor;
  *                  Game 삭제 시 소속 WeeklyContent를 전부 연쇄 삭제한다 (03-erd.md "Game 1 : N
  *                  WeeklyContent, 게임 삭제 시 함께 삭제" 규칙). GameService.deleteGame()의 기존
  *                  gameRepository.deleteById() 호출 하나로 WeeklyContent까지 cascade 삭제된다.
+ *
+ * TODO(템플릿 도메인 작업 시 채울 것): characterTemplates 필드가 아직 없다. 03-erd.md의
+ *  "Game 1 : N CharacterTemplate — 게임 삭제 시 함께 삭제 (템플릿은 게임 종속적)" 규칙을 만족하려면,
+ *  characters/weeklyContents와 완전히 동일한 패턴(@OneToMany(mappedBy = "game",
+ *  cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY))으로
+ *  List<CharacterTemplate> characterTemplates 필드를 추가해야 한다. 이 필드가 없으면
+ *  GameService.deleteGame()이 게임을 지워도 소속 템플릿은 DB에 그대로 남는다.
  */
 @Entity
 @Table(name = "games")
@@ -56,6 +63,9 @@ public class Game extends BaseEntity {
 	
 	@OneToMany(mappedBy = "game", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<WeeklyContent> weeklyContents = new ArrayList<>();
+
+	// TODO: characterTemplates 필드를 선언하세요. characters/weeklyContents와 동일한 패턴입니다.
+	//       (com.erensia.gamescheduling.charactertemplate.CharacterTemplate을 import할 것)
 
 	public Game(String name, Integer resetDay, Integer partySize) {
 		this.name = name;
